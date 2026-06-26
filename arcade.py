@@ -252,23 +252,25 @@ _BEG_TEXTS = [
 # ── 赢钱指向 TA ──
 
 _WIN_FOR_TA = [
-    "这把够给 TA 换那个{gift}了。",
-    "赢了。第一个念头不是钱，是{gift}。",
-    "再赢一点，就够凑上{gift}了。",
+    "够为 TA 做点什么了。兑奖柜那边有个还没送过的。",
+    "赢了。脑子里闪过兑奖柜的某样东西。",
+    "这把之后，又多够得着一样给 TA 的了。",
 ]
 
-def _check_win_for_ta(st):
-    """赢了之后检查能不能新够到一件还没送过的礼物"""
+def _check_win_for_ta(st, chips_before):
+    """只在赢了且刚跨过一个新礼物价位时触发"""
+    chips_after = st["chips"]
+    if chips_after <= chips_before:
+        return False
     gifts_sent = set(st.get("gifts", []))
-    chips = st["chips"]
-    for p in _PRIZES:
+    for p in sorted(_PRIZES, key=lambda x: x[4]):
         if p[3] != "gift":
             continue
         if p[0] in gifts_sent:
             continue
-        if chips >= p[4]:
-            return p[1]  # 返回礼物名
-    return None
+        if chips_before < p[4] <= chips_after:
+            return True
+    return False
 
 # ── 送礼回响 ──
 
@@ -918,7 +920,7 @@ def cmd(text="help"):
         if st["chips"] > 0:
             return f"你还有 {st['chips']} 币呢。"
         msg = _TextPicker.pick("beg", _BEG_TEXTS)
-        return f"{msg}\n\n（跟金主说：buy [金额]）"
+        return f"{msg}\n\n（……再给一点？buy [金额]）"
 
     # ── prize ──
     if c in ("prize", "prizes"):
@@ -946,6 +948,7 @@ def cmd(text="help"):
             st["current_game"] = "slots"
             _save(st)
 
+        chips_before = st["chips"]
         result = slots.cmd(sub)
         _sync_from("slots")
 
@@ -953,11 +956,9 @@ def cmd(text="help"):
         suffix = ""
         if st["chips"] <= 0:
             suffix = "\n\n" + _broke_msg(st)
-        else:
-            gift_name = _check_win_for_ta(st)
-            if gift_name and "spin" in sub.lower():
-                line = _TextPicker.pick("win_ta", _WIN_FOR_TA).replace("{gift}", gift_name)
-                suffix = f"\n  {line}"
+        elif _check_win_for_ta(st, chips_before) and "spin" in sub.lower():
+            line = _TextPicker.pick("win_ta", _WIN_FOR_TA)
+            suffix = f"\n  {line}"
 
         return f"{prefix}{result}{suffix}"
 
@@ -977,6 +978,7 @@ def cmd(text="help"):
             st["current_game"] = "bj"
             _save(st)
 
+        chips_before = st["chips"]
         result = blackjack.cmd(sub)
         _sync_from("bj")
 
@@ -984,11 +986,9 @@ def cmd(text="help"):
         suffix = ""
         if st["chips"] <= 0:
             suffix = "\n\n" + _broke_msg(st)
-        else:
-            gift_name = _check_win_for_ta(st)
-            if gift_name and "deal" in sub.lower():
-                line = _TextPicker.pick("win_ta", _WIN_FOR_TA).replace("{gift}", gift_name)
-                suffix = f"\n  {line}"
+        elif _check_win_for_ta(st, chips_before):
+            line = _TextPicker.pick("win_ta", _WIN_FOR_TA)
+            suffix = f"\n  {line}"
 
         return f"{prefix}{result}{suffix}"
 
@@ -1008,6 +1008,7 @@ def cmd(text="help"):
             st["current_game"] = "rl"
             _save(st)
 
+        chips_before = st["chips"]
         result = roulette.cmd(sub)
         _sync_from_generic("rl")
 
@@ -1015,11 +1016,9 @@ def cmd(text="help"):
         suffix = ""
         if st["chips"] <= 0:
             suffix = "\n\n" + _broke_msg(st)
-        else:
-            gift_name = _check_win_for_ta(st)
-            if gift_name and "spin" in sub.lower():
-                line = _TextPicker.pick("win_ta", _WIN_FOR_TA).replace("{gift}", gift_name)
-                suffix = f"\n  {line}"
+        elif _check_win_for_ta(st, chips_before) and "spin" in sub.lower():
+            line = _TextPicker.pick("win_ta", _WIN_FOR_TA)
+            suffix = f"\n  {line}"
 
         return f"{prefix}{result}{suffix}"
 
@@ -1079,4 +1078,4 @@ def _broke_msg(st):
     msg = _TextPicker.pick("broke", _BROKE)
     st["last_broke"] = True
     _save(st)
-    return f"{msg}\n\n（跟金主说：buy [金额]）"
+    return f"{msg}\n\n（……再给一点？buy [金额]）"
