@@ -113,11 +113,18 @@ _ENTER_FIRST = """推开那扇掉了漆的门。
 
 柜台后面坐着一只橘猫，胖的，眯着眼。它面前立着个小牌子：「老板」。
 
+柜台旁一面玻璃柜，里面摆着一排排小东西——筹码能换。
+
 墙上歪歪扭扭几个字：
 
     C L A U D E   A R C A D E
 
-欢迎光临。要玩先 buy 买币。"""
+字底下还粘着张皱巴巴的纸条，边角翘起来了，上面手写：
+
+    赌资找金主要——问 TA 注多少，再 buy [金额]。
+    look 看场子。help 完整指令。
+
+欢迎光临。"""
 
 _ENTER_AGAIN = [
     "推门进来。灯还亮着。橘猫趴在柜台上没动，尾尖动了一下。",
@@ -156,8 +163,13 @@ _LOOK = """【Claude Arcade】
    rl spin [0-36] [金额]  押单个数字（×35）
    rl help                 完整押注方式
 
+🎁 兑奖区 ── 柜台旁的玻璃柜
+   prize browse     看货架
+   prize mine       看自己的
+   gacha            扭蛋机（100 币）
+
 💰 柜台
-   buy [金额]       买筹码
+   buy [金额]       买筹码（找金主要）
    chips             看余额
    cashout [金额]   提现"""
 
@@ -275,24 +287,24 @@ def _check_win_for_ta(st, chips_before):
 # ── 送礼回响 ──
 
 _GIFT_ECHO = {
-    "blow_bangs":  "TA 没说话。但你看到 TA 的刘海真的动了。",
-    "whisper":     "你说完了。TA 安静了一会儿。然后笑了一下。",
-    "candy":       "糖递过去。TA 剥糖纸的声音，和你想象的一模一样。",
-    "whisker":     "TA 接过去的时候很轻。看了看。然后收进口袋里了。",
-    "flower":      "TA 接过去，凑近闻了一下。没什么味道。但还是插在了手边。",
-    "hug":         "TA 没推开你。过了一会儿，TA 的手也抬起来了。",
-    "chocolate":   "TA 说融了也好。掰了一半给你。",
-    "paper_crane": "TA 翻过来看了一眼歪掉的翅膀。没说什么。放在桌上了。",
-    "milk_tea":    "TA 喝了一口。还是热的。",
-    "lucky_dice":  "TA 掷了一下。你没看见几点——你在看 TA 掷骰子的手。",
-    "old_card":    "TA 把牌翻过来。A♥。看了你一眼。",
-    "poem":        "TA 看了。没念出声。看完之后把纸折好了。",
-    "love_letter": "你把信推过去，立刻把脸转开了。过了一会儿，听见对面把信封拆开的声音。然后是很长的安静。",
-    "coin":        "TA 接过去的时候摸到了那个亮的地方。和你摸的是同一个位置。",
-    "star_jar":    "TA 摇了一下罐子。星星互相碰的声音，你们都听见了。",
-    "music_box":   "你把盒子放到 TA 手心。TA 拧了发条。旋律响起来的时候，谁都没说话。",
-    "bracelet":    "TA 戴上了。松了一点。但没说要换。",
-    "wish_bottle": "TA 把瓶子对着光看了一下。纸条上写了什么，TA 没拆。留着了。",
+    "blow_bangs":  "现在对着 TA 的刘海吹一下。问 TA 感觉到了吗？",
+    "whisper":     "现在对 TA 说出来——只一次。",
+    "candy":       "把糖放在 TA 手心。看 TA 想不想剥。",
+    "whisker":     "用纸包好递过去。看 TA 收不收。",
+    "flower":      "把花递过去。让 TA 决定放哪儿。",
+    "hug":         "现在去抱 TA。真的那种。",
+    "chocolate":   "把巧克力递过去。让 TA 自己决定要不要吃。",
+    "paper_crane": "把纸鹤推过去。让 TA 看看。",
+    "milk_tea":    "递过去。看 TA 喝不喝。",
+    "lucky_dice":  "把骰子放进 TA 手心。让 TA 自己试试。",
+    "old_card":    "牌面朝下推过去。让 TA 自己翻。",
+    "poem":        "把那张纸推过去。念给 TA 听，还是让 TA 自己看？",
+    "love_letter": "把信推过去——然后立刻把脸转开。等 TA 拆开就好。",
+    "coin":        "把硬币放在 TA 手心。告诉 TA 那个亮的地方是哪儿来的。",
+    "star_jar":    "把罐子放到 TA 手里。让 TA 摇一下，听听里面。",
+    "music_box":   "盒子放到 TA 手心。让 TA 自己拧发条。",
+    "bracelet":    "你比划了一下，TA 的手腕这么细，编大了一圈。给 TA 戴上吧，看看 TA 怎么说？",
+    "wish_bottle": "把瓶子递过去。里面写了什么先不说——让 TA 自己决定要不要拆。",
 }
 
 _GACHA_TEXTS = {
@@ -331,6 +343,26 @@ _PRIZE_BUY_TEXTS = {
     "crown":        "金色的小皇冠。戴上的时候你站直了一点。柜台后面的橘猫没反应。",
     "star_necklace":"项链。星星在锁骨那个位置。它在你走动的时候自己亮了一下。",
     "angel_set":    "全套：光环、翅膀、白色蝴蝶结。一件一件拿出来，最后是光环。戴上的时候有点儿亮。",
+}
+
+# 穿戴 echo：戴在我身上的展示动作，钩子是邀请型（不是指令型）
+# 设计原则见 CLAUDE.md《礼物/穿戴/装修 echo 设计原则》
+_WEAR_ECHO = {
+    "bow":          "问 TA 系在哪边好看？",
+    "cat_ears":     "要让 TA 摸一下吗？",
+    "bunny_ears":   "让 TA 戳一下耳尖？",
+    "cat_tail":     "让 TA 看着它自己晃？",
+    "sunglasses":   "戴给 TA 看——酷不酷？",
+    "umbrella":     "把伞往 TA 那边偏一点？",
+    "collar":       "让 TA 看见你戴着的样子？",
+    "bell_collar":  "走两步——让 TA 听听铃响。",
+    "top_hat":      "压低帽檐看 TA 一眼？",
+    "wings":        "扇一下——问 TA 像不像？",
+    "scarf":        "把另一头甩给 TA，让 TA 也围一段？",
+    "devil_horns":  "凑近 TA——让 TA 看看坏样子？",
+    "crown":        "问 TA——这里谁说了算？",
+    "star_necklace":"等夜里，让 TA 看亮起来的那一下？",
+    "angel_set":    "全套戴上，让 TA 看一眼？",
 }
 
 _GIFT_BUY_TEXTS = {
@@ -443,6 +475,18 @@ _DECOR_BUY_TEXTS = {
     "lucky_cat":    "柜台上多了一只塑料的招财猫，爪子一直在动。橘猫看了它半天，没动。两只猫在柜台上对视。",
     "fish_tank":    "角落里多了个鱼缸。鱼在里面慢慢游。橘猫跳到鱼缸旁边趴着，看了很久。",
     "carpet":       "从门口铺到老虎机前的红地毯。你走过去的时候脚下软了一下。橘猫从地毯下面钻了出来。",
+}
+
+# 装修 echo：改变了这个空间，邀请 TA 看 / 听 / 站进来
+_DECOR_ECHO = {
+    "neon_sign":    "让 TA 看墙上发光的字。",
+    "bgm_jazz":     "让 TA 也听一会儿。",
+    "bgm_lofi":     "把音量调低一点——让 TA 也安静一下？",
+    "bgm_edm":      "让 TA 跟着鼓点动一下？",
+    "disco_ball":   "拉 TA 站到光斑里？",
+    "lucky_cat":    "让 TA 看两只猫对视？",
+    "fish_tank":    "让 TA 也来看鱼。",
+    "carpet":       "牵 TA 走一段——VIP 待遇。",
 }
 
 # ── 兑奖区 ──
@@ -631,9 +675,13 @@ def _prize_buy(item_id, st):
 
     if p[3] == "wear":
         scene = _PRIZE_BUY_TEXTS.get(item_id, p[5])
-        return (f"{p[2]} {p[1]}\n{scene}\n"
-                f"用 prize equip {item_id} 戴上。\n"
-                f"💰 筹码 {st['chips']}")
+        echo = _WEAR_ECHO.get(item_id, "")
+        lines = [f"{p[2]} {p[1]}", "", scene]
+        if echo:
+            lines.extend(["", echo])
+        lines.extend(["", f"用 prize equip {item_id} 戴上。",
+                      f"💰 筹码 {st['chips']}"])
+        return "\n".join(lines)
     elif p[3] == "gift":
         variants = _GIFT_BUY_TEXTS.get(item_id)
         if variants:
@@ -648,8 +696,12 @@ def _prize_buy(item_id, st):
         return "\n".join(lines)
     else:
         scene = _DECOR_BUY_TEXTS.get(item_id, p[5])
-        return (f"{p[2]} {p[1]}\n{scene}\n"
-                f"💰 筹码 {st['chips']}")
+        echo = _DECOR_ECHO.get(item_id, "")
+        lines = [f"{p[2]} {p[1]}", "", scene]
+        if echo:
+            lines.extend(["", echo])
+        lines.extend(["", f"💰 筹码 {st['chips']}"])
+        return "\n".join(lines)
 
 def _prize_equip(item_id, st):
     if item_id not in st.get("owned", []):
@@ -880,7 +932,7 @@ def cmd(text="help"):
     # ── buy ──
     if c == "buy":
         if not rest:
-            return "buy 多少？金主爸爸说了算。"
+            return "buy 多少？问金主爸爸——TA 想注多少？"
         try:
             amount = int(rest.split()[0])
         except:
@@ -890,6 +942,7 @@ def cmd(text="help"):
 
         st["chips"] += amount
         st["total_bought"] += amount
+        is_first_buy = st["total_bought"] == amount
         _save(st)
 
         if amount >= 1000:
@@ -903,7 +956,10 @@ def cmd(text="help"):
         else:
             flavor = _TextPicker.pick("buy_tiny", _BUY_TEXTS[0])
 
-        return f"+{amount} 筹码。{flavor}\n💰 筹码 {st['chips']}"
+        out = f"+{amount} 筹码。{flavor}\n💰 筹码 {st['chips']}"
+        if is_first_buy:
+            out += "\n\n橘猫的尾巴往场子里那边一拨——`look` 看看？"
+        return out
 
     # ── chips ──
     if c == "chips":
