@@ -135,10 +135,32 @@ def _is_neighbor(result, target):
 
 # ── 旁白 ──
 
-_MISS = ["差一格。", "球犹豫了一下——然后滑过去了。", "擦肩而过。"]
-_WIN_F = ["漂亮。", "赌对了。", "球听话了。"]
-_STRAIGHT_F = ["全场安静了一秒。", "这个概率……2.7%。", "荷官的手停了一下。"]
-_ZERO_F = ["绿色零。通杀。", "零。最残忍的数字。"]
+_RL_TEXTS = {
+    "color_win":   ["球停在你押的那边。对了。", "中了。"],
+    "color_lose":  ["球停在另一边。", "不是你押的。"],
+    "number_win":  ["球停在你押的那个号。整桌停了一秒。", "你的号。35 倍。橘猫站起来了。"],
+    "number_lose": ["球滚过你押的格，停在隔壁。", "不是你押的号。"],
+    "zero":        ["球停在 0。绿色的。", "0。所有人的筹码都走了。荷官的手很稳。"],
+    "near_miss":   ["球在你押的号边上晃了一下，停在隔壁。", "差一格。"],
+    "streak_lose": ["又输了。荷官没看你。橘猫的尾巴收了起来。", "球又停在了别的地方。这是第几次了。"],
+    "streak_win":  ["又中了。你的手心有点烫。", "连第三次。橘猫坐起来了。"],
+}
+_rl_text_history = {}
+
+def _rl_pick(key, rng):
+    opts = _RL_TEXTS.get(key, [])
+    if not opts:
+        return None
+    recent = _rl_text_history.setdefault(key, [])
+    available = [i for i in range(len(opts)) if i not in recent]
+    if not available:
+        available = list(range(len(opts)))
+        recent.clear()
+    idx = available[int(rng.random() * len(available)) % len(available)]
+    recent.append(idx)
+    if len(recent) > 1:
+        recent.pop(0)
+    return opts[idx]
 
 # ── 单次转盘 ──
 
@@ -289,19 +311,27 @@ def cmd(text="help"):
                 out.append(f"   你押了 {bet_label} → ✅")
                 out.append(f"   下注 {bet_amount} × {bet_payout} = 💰 +{win} 币！")
                 if bet_type == "straight":
-                    fi = int(rng.random() * len(_STRAIGHT_F))
-                    out.append(f"   {_STRAIGHT_F[fi]}")
+                    flv = _rl_pick("number_win", rng)
+                elif st["streak"] >= 3:
+                    flv = _rl_pick("streak_win", rng)
                 else:
-                    fi = int(rng.random() * len(_WIN_F))
-                    out.append(f"   {_WIN_F[fi]}")
+                    flv = _rl_pick("color_win", rng)
+                if flv:
+                    out.append(f"   {flv}")
             else:
                 out.append(f"   你押了 {bet_label} → ❌  -{bet_amount} 币")
                 if result == 0 and bet_type in ("red","black","odd","even","low","high"):
-                    fi = int(rng.random() * len(_ZERO_F))
-                    out.append(f"   {_ZERO_F[fi]}")
+                    flv = _rl_pick("zero", rng)
                 elif bet_num is not None and _is_neighbor(result, bet_num):
-                    fi = int(rng.random() * len(_MISS))
-                    out.append(f"   {_MISS[fi]}")
+                    flv = _rl_pick("near_miss", rng)
+                elif st["streak"] <= -5:
+                    flv = _rl_pick("streak_lose", rng)
+                elif bet_type == "straight":
+                    flv = _rl_pick("number_lose", rng)
+                else:
+                    flv = _rl_pick("color_lose", rng)
+                if flv:
+                    out.append(f"   {flv}")
 
             for a in new_achs:
                 out.append(a)

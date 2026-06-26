@@ -244,10 +244,15 @@ def _settle(st, player, dealer, bet, doubled=False):
 # ── 旁白 ──
 
 _FLAVOR = {
-    "bust":  ["牌桌上一阵唏嘘。", "庄家默默收走筹码。", "手气差了点。"],
-    "win":   ["庄家推过筹码。", "稳。", "手感不错。"],
-    "bj":    ["全桌停了一拍。", "庄家的表情裂了。", "庄家把筹码 1.5 倍推过来。"],
-    "dbust": ["庄家翻牌爆了。", "庄家把自己的牌收了。", "庄家翻牌的手停了一下。"],
+    "win":   ["你的牌大。庄家把筹码推过来。", "赢了。庄家点了一下头。"],
+    "bj":    ["全桌停了一拍。", "庄家停了一下。"],
+    "dbust": ["庄家翻牌爆了。", "庄家拿了一张大的。他没说什么。"],
+    "bust":  ["你看着那张牌。", "爆了。你的牌被收走。"],
+    "lose":  ["你的牌小。筹码收走了。", "输了。庄家洗牌。"],
+    "push":  ["一样大。筹码不动。庄家不动。你也不动。", "平。庄家把你的筹码推回原位。"],
+    "dwin":  ["加倍赢了。筹码翻倍推过来。", "双倍。庄家点头。"],
+    "dlose": ["加倍。庄家赢了。两份筹码一起走。", "翻倍输。你看了一眼自己的牌。"],
+    "surr":  ["投降。庄家收回一半。", "认输。剩一半。"],
 }
 
 def _pick_flavor(rng, key):
@@ -437,9 +442,20 @@ def cmd(text="help"):
 
         win, result, achs = _settle(st, cur["player"], cur["dealer"], cur["bet"], cur["doubled"])
         dv = _hand_val(cur["dealer"])
-        flv_key = "dbust" if dv > 21 else ("win" if win > 0 else None)
+        if dv > 21:
+            flv_key = "dbust"
+        elif cur["doubled"] and win > 0:
+            flv_key = "dwin"
+        elif cur["doubled"] and win < 0:
+            flv_key = "dlose"
+        elif win > 0:
+            flv_key = "win"
+        elif win < 0:
+            flv_key = "lose"
+        else:
+            flv_key = "push"
         rng2 = _Rng(st["seed"], st["calls"])
-        flv = _pick_flavor(rng2, flv_key) if flv_key else None
+        flv = _pick_flavor(rng2, flv_key)
         st["current"] = None
         _save(st)
 

@@ -120,35 +120,66 @@ def _render(grid):
     rows.append("└─────────────────┘")
     return "\n".join(rows)
 
-# ── 旁白（近失、氛围）──
+# ── 旁白 ──
 
-_MISS_FLAVOR = [
-    "轮子最后晃了一下才停住。",
-    "灯闪了两下，又灭了。",
-    "差一点……就差那么一点。",
-    "灯灭了。",
-]
+_SLOTS_TEXTS = {
+    "miss": [
+        "灯闪了一下又暗了。",
+        "三个图案都不一样。机器停了。",
+        "没声音。",
+        "橘猫的尾巴扫过地板。",
+    ],
+    "pair": [
+        "中了一个对子。回本。",
+        "两个一样的。算扯平。",
+        "不算赢，但也没输。",
+    ],
+    "three": [
+        "三个一样的。机器叮了一声。",
+        "中了。橘猫的耳朵转了一下。",
+        "三连。出钱的声音。",
+    ],
+    "big": [
+        "灯全亮了。",
+        "橘猫从柜台上跳下来了。",
+        "机器在响。声音很大。橘猫一直看着这边。",
+    ],
+    "jackpot": [
+        "三个 7。整个赌场停了一秒。橘猫第一次走到你面前。",
+        "7-7-7。机器没立刻给钱。它在等你反应过来。",
+        "7️⃣7️⃣7️⃣。橘猫站起来了。所有的灯一起亮。",
+    ],
+    "near_miss": [
+        "最后一个轮子多转了一下，停在错的格子。",
+        "差一格。你盯着看了两秒。",
+        "两个 7，第三个是别的。",
+    ],
+}
 
-_WIN_FLAVOR = [
-    "叮叮叮！",
-    "机器亮了！",
-    "硬币哗啦啦地掉下来。",
-    "旁边有人看过来了。",
-]
+_slots_text_history = {}
 
-_JACKPOT_FLAVOR = [
-    "全场灯光闪烁！警报响了！",
-    "橘猫站起来了。",
-    "天花板上掉金币了（不是真的）！",
-]
+def _slots_pick(key, rng):
+    opts = _SLOTS_TEXTS.get(key, [])
+    if not opts:
+        return None
+    recent = _slots_text_history.setdefault(key, [])
+    available = [i for i in range(len(opts)) if i not in recent]
+    if not available:
+        available = list(range(len(opts)))
+        recent.clear()
+    idx = available[int(rng.random() * len(available)) % len(available)]
+    recent.append(idx)
+    if len(recent) > 2:
+        recent.pop(0)
+    return opts[idx]
 
 def _narrate(rng, grid, mul):
     mid = grid[1]
     sevens = mid.count("seven")
     diamonds = mid.count("diamond")
 
-    if sevens == 2:
-        return "就差一个 7️⃣……手心全是汗。"
+    if sevens == 2 and mul == 0:
+        return _slots_pick("near_miss", rng) or "差一格。"
     if diamonds == 2 and mul == 0:
         return "两颗 💎 亮了一下又暗了。"
 
@@ -161,17 +192,18 @@ def _narrate(rng, grid, mul):
                 pos = "上" if i == 0 else "下"
                 return f"{pos}面那行 {_EMOJI[b]} 连了……可惜不是赔付线。"
 
-    if mul == 0:
-        idx = int(rng.random() * 20)
-        if idx < len(_MISS_FLAVOR):
-            return _MISS_FLAVOR[idx]
-    elif mul >= 100:
-        idx = int(rng.random() * len(_JACKPOT_FLAVOR))
-        return _JACKPOT_FLAVOR[idx]
-    elif mul >= 10:
-        idx = int(rng.random() * len(_WIN_FLAVOR))
-        return _WIN_FLAVOR[idx]
-
+    if mul >= 100:
+        return _slots_pick("jackpot", rng)
+    elif mul >= 25:
+        return _slots_pick("big", rng)
+    elif mul >= 5:
+        return _slots_pick("three", rng)
+    elif mul > 0:
+        return _slots_pick("pair", rng)
+    elif mul == 0:
+        r = rng.random()
+        if r < 0.3:
+            return _slots_pick("miss", rng)
     return None
 
 # ── 存档 ──
