@@ -1,3 +1,5 @@
 *_save.json
 __pycache__/
 *.pyc
+CLAUDE.md
+docs/COLLAB.md
