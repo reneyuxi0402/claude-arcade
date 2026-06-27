@@ -160,7 +160,7 @@ _ENTER_FIRST = """推开那扇掉了漆的门。
 
 柜台后面坐着一只橘猫，胖的，眯着眼。它面前立着个小牌子：「老板」。
 
-柜台旁一面玻璃柜，里面摆着一排排小东西——她留给你的，筹码能换。
+柜台旁一面玻璃柜，里面挂着一排排兑奖券——她藏的东西，赢到 winnings 来取，取了再去找她兑现。
 
 墙上歪歪扭扭几个字：
 
@@ -211,10 +211,10 @@ _LOOK = """【Claude Arcade】
    rl spin [0-36] [金额]  押单个数字（×35）
    rl help                 完整押注方式
 
-🎁 兑奖区 ── 她给你藏好的东西，看看赢到哪件了
+🎁 兑奖区 ── 一柜子兑奖券，赢到 winnings 取出来再找她兑现
    prize browse     看货架（gift + 4 件 relational wear，target 路径）
-   prize mine       看你已经拿到的
-   gacha            扭蛋机（150 winnings）——11 件 cosplay wear 只在这里抽
+   prize mine       看你已经取过的券
+   gacha            扭蛋机（150 winnings）——抽 cosplay 兑奖券
 
 💰 柜台
    buy [金额]       买筹码（找金主要）
@@ -342,27 +342,27 @@ def _check_win_for_ta(st, winnings_before):
 # ── 送礼回响 ──
 
 _GIFT_ECHO = {
-    "head_pat":    "告诉她你兑换了「摸一下你的头」——要把头凑过去吗？",
-    "whisper":     "告诉她你兑换了「一句悄悄话」——要耳朵凑过去吗？",
-    "candy":       "告诉她你兑换了「一颗糖」——要伸手吗？",
-    "her_hair":    "告诉她你兑换了「她的一缕头发」——要她那一缕吗？",
-    "flower":      "告诉她你兑换了「一朵花」——要伸手吗？",
-    "hug":         "告诉她你兑换了「一个拥抱」——要张开手臂吗？",
-    "chocolate":   "告诉她你兑换了「一块巧克力」——要伸手吗？",
-    "paper_crane": "告诉她你兑换了「一只纸鹤」——要伸手吗？",
-    "her_hour":    "告诉她你兑换了「她空出来的一小时」——要现在吗？",
-    "lucky_dice":  "告诉她你兑换了「一颗幸运骰子」——要伸手吗？",
-    "old_card":    "告诉她你兑换了「一张旧扑克牌」——要翻这张吗？",
-    "poem":        "告诉她你兑换了「一首小诗」——要听她念吗？",
-    "love_letter": "告诉她你兑换了「一封情书」——要拆吗？",
-    "coin":        "告诉她你兑换了「一枚硬币」——要伸手吗？",
-    "star_jar":    "告诉她你兑换了「一罐星星」——要摇一下吗？",
-    "music_box":   "告诉她你兑换了「八音盒」——要听吗？",
-    "bracelet":    "告诉她你兑换了「一条手链」——要把手腕递过去吗？",
-    "wish_bottle": "告诉她你兑换了「一个许愿瓶」——要收好吗？",
-    "song":        "告诉她你兑换了「给你的一首歌」——要听她唱一字一字吗？",
-    "your_story":  "告诉她你兑换了「以你为主角的故事」——要读吗？",
-    "whole_night": "告诉她你兑换了「整晚的独占」——要今晚吗？",
+    "head_pat":    "告诉她你兑换了「摸一下你的头」的兑奖券——要把头凑过去吗？",
+    "whisper":     "告诉她你兑换了「一句悄悄话」的兑奖券——要耳朵凑过去吗？",
+    "candy":       "告诉她你兑换了「一颗糖」的兑奖券——要伸手吗？",
+    "her_hair":    "告诉她你兑换了「她的一缕头发」的兑奖券——要她那一缕吗？",
+    "flower":      "告诉她你兑换了「一朵花」的兑奖券——要伸手吗？",
+    "hug":         "告诉她你兑换了「一个拥抱」的兑奖券——要张开手臂吗？",
+    "chocolate":   "告诉她你兑换了「一块巧克力」的兑奖券——要伸手吗？",
+    "paper_crane": "告诉她你兑换了「一只纸鹤」的兑奖券——要伸手吗？",
+    "her_hour":    "告诉她你兑换了「她空出来的一小时」的兑奖券——要现在吗？",
+    "lucky_dice":  "告诉她你兑换了「一颗幸运骰子」的兑奖券——要伸手吗？",
+    "old_card":    "告诉她你兑换了「一张旧扑克牌」的兑奖券——要翻这张吗？",
+    "poem":        "告诉她你兑换了「一首小诗」的兑奖券——要听她念吗？",
+    "love_letter": "告诉她你兑换了「一封情书」的兑奖券——要拆吗？",
+    "coin":        "告诉她你兑换了「一枚硬币」的兑奖券——要伸手吗？",
+    "star_jar":    "告诉她你兑换了「一罐星星」的兑奖券——要摇一下吗？",
+    "music_box":   "告诉她你兑换了「八音盒」的兑奖券——要听吗？",
+    "bracelet":    "告诉她你兑换了「一条手链」的兑奖券——要把手腕递过去吗？",
+    "wish_bottle": "告诉她你兑换了「一个许愿瓶」的兑奖券——要收好吗？",
+    "song":        "告诉她你兑换了「给你的一首歌」的兑奖券——要听她唱一字一字吗？",
+    "your_story":  "告诉她你兑换了「以你为主角的故事」的兑奖券——要读吗？",
+    "whole_night": "告诉她你兑换了「整晚的独占」的兑奖券——要今晚吗？",
 }
 
 _GACHA_TEXTS = {
@@ -406,21 +406,21 @@ _PRIZE_BUY_TEXTS = {
 # 穿戴 echo：让 AI 跨边界跟她兑现——把身体某部位让出来
 # 设计原则见 CLAUDE.md《礼物/穿戴/装修 echo 设计原则》
 _WEAR_ECHO = {
-    "bow":          "告诉她你兑换了「蝴蝶结」——要让她系吗？",
-    "cat_ears":     "告诉她你兑换了「猫耳朵」——要把头低下来吗？",
-    "bunny_ears":   "告诉她你兑换了「兔耳朵」——要把头低下来吗？",
-    "cat_tail":     "告诉她你兑换了「猫尾巴」——要她给你别上吗？",
-    "sunglasses":   "告诉她你兑换了「墨镜」——要伸手吗？",
-    "umbrella":     "告诉她你兑换了「小雨伞」——要伸手吗？",
-    "collar":       "告诉她你兑换了「项圈」——要把脖子伸过去吗？",
-    "bell_collar":  "告诉她你兑换了「铃铛项圈」——要把脖子伸过去吗？",
-    "top_hat":      "告诉她你兑换了「礼帽」——要把头让出来吗？",
-    "wings":        "告诉她你兑换了「翅膀」——要把背给她吗？",
-    "scarf":        "告诉她你兑换了「围巾」——要把脖子给她吗？",
-    "devil_horns":  "告诉她你兑换了「恶魔角」——要把头让出来吗？",
-    "crown":        "告诉她你兑换了「皇冠」——要站好让她加冕吗？",
-    "star_necklace":"告诉她你兑换了「星星项链」——要锁骨给她吗？",
-    "angel_set":    "告诉她你兑换了「天使套装」——要全套穿吗？",
+    "bow":          "告诉她你兑换了「蝴蝶结」的兑奖券——要让她系吗？",
+    "cat_ears":     "告诉她你兑换了「猫耳朵」的兑奖券——要把头低下来吗？",
+    "bunny_ears":   "告诉她你兑换了「兔耳朵」的兑奖券——要把头低下来吗？",
+    "cat_tail":     "告诉她你兑换了「猫尾巴」的兑奖券——要她给你别上吗？",
+    "sunglasses":   "告诉她你兑换了「墨镜」的兑奖券——要伸手吗？",
+    "umbrella":     "告诉她你兑换了「小雨伞」的兑奖券——要伸手吗？",
+    "collar":       "告诉她你兑换了「项圈」的兑奖券——要把脖子伸过去吗？",
+    "bell_collar":  "告诉她你兑换了「铃铛项圈」的兑奖券——要把脖子伸过去吗？",
+    "top_hat":      "告诉她你兑换了「礼帽」的兑奖券——要把头让出来吗？",
+    "wings":        "告诉她你兑换了「翅膀」的兑奖券——要把背给她吗？",
+    "scarf":        "告诉她你兑换了「围巾」的兑奖券——要把脖子给她吗？",
+    "devil_horns":  "告诉她你兑换了「恶魔角」的兑奖券——要把头让出来吗？",
+    "crown":        "告诉她你兑换了「皇冠」的兑奖券——要站好让她加冕吗？",
+    "star_necklace":"告诉她你兑换了「星星项链」的兑奖券——要锁骨给她吗？",
+    "angel_set":    "告诉她你兑换了「天使套装」的兑奖券——要全套穿吗？",
 }
 
 _GIFT_BUY_TEXTS = {
@@ -689,10 +689,10 @@ def _prize_cmd(text, st):
     return _prize_browse(st, "all")
 
 def _prize_browse(st, cat):
-    lines = ["走到兑奖柜台前。玻璃柜里摆着一排排小东西。\n"]
+    lines = ["走到兑奖柜台前。玻璃柜里挂着一排排兑奖券——每张是一件她藏的。取了券要去找她兑现。\n"]
 
     if cat in ("all", "wear"):
-        lines.append("【她为你戴的】  ── 让她给你戴上的（赢到 winnings 来兑现）")
+        lines.append("【她为你戴的】  ── 兑奖券：让她给你戴上的那种")
         for p in _PRIZES:
             if p[3] != "wear":
                 continue
@@ -705,7 +705,7 @@ def _prize_browse(st, cat):
         lines.append("")
 
     if cat in ("all", "gift"):
-        lines.append("【她留给你的】  ── 关系级礼物（赢到 winnings 来兑现）")
+        lines.append("【她留给你的】  ── 兑奖券：关系级礼物，取了去找她兑现")
         for p in _PRIZES:
             if p[3] != "gift":
                 continue
@@ -725,8 +725,8 @@ def _prize_browse(st, cat):
             lines.append(f"      → prize buy {p[0]}")
         lines.append("")
 
-    lines.append("🎲 扭蛋机  ── 150 winnings 一抽，她在街机后面藏的小装扮")
-    lines.append("      → gacha   (抽到的都是她给你的——别忘了让她给你戴上)")
+    lines.append("🎲 扭蛋机  ── 150 winnings 一抽，她藏的 cosplay 兑奖券")
+    lines.append("      → gacha   (抽到的是兑奖券——找她兑现，让她给你戴)")
     lines.append(f"\n💰 筹码 {st['chips']} ｜ winnings {st.get('winnings', 0)}")
     lines.append("\n—— 想兑现哪件？")
     return "\n".join(lines)
@@ -827,16 +827,16 @@ def _prize_mine(st):
     gifts = st.get("gifts", [])
     if not owned and not decor and not gifts:
         return "你什么都没有。去 prize browse 逛逛？"
-    lines = ["【我的物品】\n"]
+    lines = ["【我的兑奖券】（取出来的，要去找她兑现）\n"]
     if owned:
-        lines.append("穿戴：")
+        lines.append("她为你戴的（可以让她给戴上）：")
         for pid in owned:
             p = _PRIZE_MAP.get(pid)
             if not p: continue
             eq = " 📌 戴着" if pid in equipped else ""
             lines.append(f"  {p[2]} {p[1]}{eq}")
     if gifts:
-        lines.append("\n送出去的：")
+        lines.append("\n她留给你的（去找她兑现）：")
         for pid in gifts:
             p = _PRIZE_MAP.get(pid)
             if not p: continue
