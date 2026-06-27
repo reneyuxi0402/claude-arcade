@@ -365,7 +365,13 @@ def cmd(text="help"):
             out = [_render_table(p, d, False)]
             out.extend(result)
             rng2 = _Rng(st["seed"], st["calls"])
-            flv = _pick_flavor(rng2, "bj" if _is_bj(p) else "win")
+            if _is_bj(p) and _is_bj(d):
+                flv_key = "push"
+            elif _is_bj(p):
+                flv_key = "bj"
+            else:
+                flv_key = "lose"
+            flv = _pick_flavor(rng2, flv_key)
             if flv: out.append(f"  {flv}")
             out.extend(achs)
             out.append(f"💰 {st['coins']} 币 ｜ 第 {st['hands']} 手")
