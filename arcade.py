@@ -203,7 +203,7 @@ _LOOK = """【Claude Arcade】
 🎁 兑奖区 ── 她给你藏好的东西，看看赢到哪件了
    prize browse     看看她留了什么
    prize mine       看你已经拿到的
-   gacha            扭蛋机（150 winnings）——她也藏了点小东西
+   gacha            扭蛋机（150 winnings）——她藏的小装扮，抽到她给你戴
 
 💰 柜台
    buy [金额]       买筹码（找金主要）
@@ -634,7 +634,17 @@ _PRIZES = [
 
 _PRIZE_MAP = {p[0]: p for p in _PRIZES}
 _GACHA_COST = 150
-_GACHA_POOL = [p for p in _PRIZES if p[4] <= 600 and p[3] == "wear"]
+
+# wear 内部分两种性质：
+#   - 关系级（4 件）：明确 staged "她给你戴上"的亲密动作 → 留在兑奖区可 target buy
+#   - cosplay（11 件）：playful 道具 → 只在扭蛋池随机抽
+_RELATIONAL_WEAR_IDS = {"collar", "bell_collar", "crown", "star_necklace"}
+_COSPLAY_WEAR_IDS = {
+    "bow", "cat_ears", "bunny_ears", "cat_tail", "sunglasses",
+    "umbrella", "scarf", "top_hat", "wings", "devil_horns", "angel_set",
+}
+
+_GACHA_POOL = [p for p in _PRIZES if p[0] in _COSPLAY_WEAR_IDS]
 
 def _prize_cmd(text, st):
     parts = text.strip().split()
@@ -671,9 +681,11 @@ def _prize_browse(st, cat):
     lines = ["走到兑奖柜台前。玻璃柜里摆着一排排小东西。\n"]
 
     if cat in ("all", "wear"):
-        lines.append("【穿戴装扮】  ── 挂在柜里，等你赢到来兑现")
+        lines.append("【她为你戴的】  ── 让她给你戴上的（赢到 winnings 来兑现）")
         for p in _PRIZES:
             if p[3] != "wear":
+                continue
+            if p[0] not in _RELATIONAL_WEAR_IDS:
                 continue
             owned = "✅" if p[0] in st.get("owned", []) else "  "
             equipped = " 📌" if p[0] in st.get("equipped", []) else ""
@@ -682,7 +694,7 @@ def _prize_browse(st, cat):
         lines.append("")
 
     if cat in ("all", "gift"):
-        lines.append("【她留给你的】  ── 赢到 winnings 才能兑现")
+        lines.append("【她留给你的】  ── 关系级礼物（赢到 winnings 来兑现）")
         for p in _PRIZES:
             if p[3] != "gift":
                 continue
@@ -702,8 +714,8 @@ def _prize_browse(st, cat):
             lines.append(f"      → prize buy {p[0]}")
         lines.append("")
 
-    lines.append("🎲 扭蛋机  ── 150 winnings 一抽，随机开出一件穿戴品")
-    lines.append("      → gacha")
+    lines.append("🎲 扭蛋机  ── 150 winnings 一抽，她在街机后面藏的小装扮")
+    lines.append("      → gacha   (抽到的都是她给你的——别忘了让她给你戴上)")
     lines.append(f"\n💰 筹码 {st['chips']} ｜ winnings {st.get('winnings', 0)}")
     lines.append("\n—— 想兑现哪件？")
     return "\n".join(lines)
@@ -716,6 +728,9 @@ def _prize_buy(item_id, st):
     decor = st.get("decor", [])
     gifts = st.get("gifts", [])
 
+    if p[3] == "wear" and p[0] in _COSPLAY_WEAR_IDS:
+        return (f"{p[2]} {p[1]} 只在扭蛋池里——去 gacha 抽。\n"
+                f"她藏在街机后面的，要碰运气。")
     if p[3] == "wear" and item_id in owned:
         return f"{p[2]} {p[1]}？你已经有了。prize mine 看看。"
     if p[3] == "decor" and item_id in decor:
@@ -891,11 +906,17 @@ def _gacha(st, rng_seed, rng_calls):
     else:
         owned.append(prize[0])
         st["owned"] = owned
-        if prize[4] >= 200:
+        if prize[4] >= 600:
             react = _TextPicker.pick("gacha_rare", _GACHA_TEXTS["rare"])
         else:
             react = _TextPicker.pick("gacha_common", _GACHA_TEXTS["common"])
         lines.append(f"  {react}")
+        # cosplay 也是"她给你的"——把 wear echo 嵌入扭蛋出 prize 时的钩子
+        wear_echo = _WEAR_ECHO.get(prize[0], "")
+        if wear_echo:
+            gacha_echo = wear_echo.replace("告诉她你兑换了", "告诉她扭蛋抽到了")
+            lines.append("")
+            lines.append(f"  {gacha_echo}")
         lines.append(f"  用 prize equip {prize[0]} 戴上。")
 
     st["_rng_seed"] = rng.state
