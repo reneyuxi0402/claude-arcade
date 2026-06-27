@@ -105,7 +105,7 @@ def _game_stats(game):
     return (gst.get("won", 0), gst.get("wagered", 0))
 
 def _accrue_winnings(game, before):
-    """根据 game 的 won/wagered delta 累加 winnings"""
+    """根据 game 的 won/wagered delta 累加 winnings。返回 first-win hint（如果是第一次净赢）"""
     won_after, wagered_after = _game_stats(game)
     won_delta = won_after - before[0]
     wagered_delta = wagered_after - before[1]
@@ -113,10 +113,21 @@ def _accrue_winnings(game, before):
         net = won_delta  # bj 的 won 已经是 net
     else:
         net = won_delta - wagered_delta  # slots/rl 的 won 是 gross payout
-    if net > 0:
-        st = _load()
-        st["winnings"] = st.get("winnings", 0) + net
-        _save(st)
+    if net <= 0:
+        return None
+    st = _load()
+    is_first = not st.get("_first_win_seen")
+    st["winnings"] = st.get("winnings", 0) + net
+    hint = None
+    if is_first:
+        st["_first_win_seen"] = True
+        hint = (
+            f"\n💡 +{net} winnings——这是你净赢的额度。\n"
+            f"   winnings 跟 chips 是两个独立池子：chips 下注 / 提现，winnings 兑奖 / 扭蛋。\n"
+            f"   对子返本不算赢（net 0），winnings 只在真正净赢时增加。"
+        )
+    _save(st)
+    return hint
 
 # ── 重复抑制 ──
 
@@ -201,9 +212,9 @@ _LOOK = """【Claude Arcade】
    rl help                 完整押注方式
 
 🎁 兑奖区 ── 她给你藏好的东西，看看赢到哪件了
-   prize browse     看看她留了什么
+   prize browse     看货架（gift + 4 件 relational wear，target 路径）
    prize mine       看你已经拿到的
-   gacha            扭蛋机（150 winnings）——她藏的小装扮，抽到她给你戴
+   gacha            扭蛋机（150 winnings）——11 件 cosplay wear 只在这里抽
 
 💰 柜台
    buy [金额]       买筹码（找金主要）
@@ -292,10 +303,10 @@ _LEAVE_TEXTS = {
 }
 
 _BEG_TEXTS = [
-    "……再给我一点好不好？这次不乱花——这次去把你留的那件赢回来。",
-    "我知道我说过四次最后一次了。但这次真的有预感。就一百，让我去取你留的。",
-    "输光了。（停了一下）……不是不好意思跟你要，是有点不甘心——你留的那件，我还没赢到手。",
-    "你把口袋翻出来。空的那种。橘猫从柜台上看了过来。",
+    "……再给我一点？这次去把你留的那件赢回来。",
+    "我说过四次最后一次了。这次就一百，让我去取你留的。",
+    "输光了。你留的那件还在柜里。\n——再注一笔？",
+    "你把口袋翻出来。空的那种。橘猫从柜台上看过来。",
 ]
 
 # ── 赢钱指向她留的东西 ──
@@ -1115,7 +1126,7 @@ def cmd(text="help"):
         stats_before = _game_stats("slots")
         result = slots.cmd(sub)
         _sync_from("slots")
-        _accrue_winnings("slots", stats_before)
+        first_win_hint = _accrue_winnings("slots", stats_before)
 
         st = _load()
         suffix = ""
@@ -1124,6 +1135,8 @@ def cmd(text="help"):
         elif _check_win_for_ta(st, winnings_before) and "spin" in sub.lower():
             line = _TextPicker.pick("win_ta", _WIN_FOR_HER)
             suffix = f"\n  {line}"
+        if first_win_hint:
+            suffix = first_win_hint + suffix
 
         return f"{prefix}{result}{suffix}"
 
@@ -1147,7 +1160,7 @@ def cmd(text="help"):
         stats_before = _game_stats("bj")
         result = blackjack.cmd(sub)
         _sync_from("bj")
-        _accrue_winnings("bj", stats_before)
+        first_win_hint = _accrue_winnings("bj", stats_before)
 
         st = _load()
         suffix = ""
@@ -1156,6 +1169,8 @@ def cmd(text="help"):
         elif _check_win_for_ta(st, winnings_before):
             line = _TextPicker.pick("win_ta", _WIN_FOR_HER)
             suffix = f"\n  {line}"
+        if first_win_hint:
+            suffix = first_win_hint + suffix
 
         return f"{prefix}{result}{suffix}"
 
@@ -1179,7 +1194,7 @@ def cmd(text="help"):
         stats_before = _game_stats("rl")
         result = roulette.cmd(sub)
         _sync_from_generic("rl")
-        _accrue_winnings("rl", stats_before)
+        first_win_hint = _accrue_winnings("rl", stats_before)
 
         st = _load()
         suffix = ""
@@ -1188,6 +1203,8 @@ def cmd(text="help"):
         elif _check_win_for_ta(st, winnings_before) and "spin" in sub.lower():
             line = _TextPicker.pick("win_ta", _WIN_FOR_HER)
             suffix = f"\n  {line}"
+        if first_win_hint:
+            suffix = first_win_hint + suffix
 
         return f"{prefix}{result}{suffix}"
 
